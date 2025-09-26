@@ -6,11 +6,30 @@ const PORT = 3001
 
 // CORS для фронта
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://app.localhost:5173'],
+  origin: ['http://localhost:5173', 'http://rand.localhost'],
   credentials: true
 }))
 
 app.use(express.json())
+
+// Промежуточное ПО для логирования
+app.use((req, res, next) => {
+  console.log(`
+--- Новый запрос ---`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  
+  const originalJson = res.json;
+  
+  res.json = (data) => {
+    console.log(`[${new Date().toISOString()}] Ответ:`, data);
+    // Восстанавливаем исходный res.json
+    res.json = originalJson;
+    // Отправляем данные
+    return originalJson.call(res, data);
+  };
+  
+  next();
+});
 
 // Эндпоинт для рандомного числа
 app.get('/random', (req, res) => {
