@@ -59,41 +59,60 @@ bun run build
 #### Пример `nginx.conf`
 
 ```nginx
-# Backend API Server
-server {
-    listen 443 ssl http2;
-    server_name api.localhost;
+user http;
+worker_processes auto;
 
-    # --- ЗАМЕНИТЕ ПУТИ НА ВАШИ ---
-    # Путь можно узнать командой `mkcert -CAROOT`
-    ssl_certificate      /home/user/.local/share/mkcert/api.localhost.pem;
-    ssl_certificate_key  /home/user/.local/share/mkcert/api.localhost-key.pem;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
 
-    location / {
-        proxy_pass         http://127.0.0.1:3001;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
+events {
+    worker_connections 1024;
 }
 
-# Frontend React App
-server {
-    listen 443 ssl http2;
-    server_name rand.localhost;
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
 
-    # --- ЗАМЕНИТЕ ПУТИ НА ВАШИ ---
-    ssl_certificate      /home/user/.local/share/mkcert/rand.localhost.pem;
-    ssl_certificate_key  /home/user/.local/share/mkcert/rand.localhost-key.pem;
+    sendfile on;
+    keepalive_timeout 65;
 
-    # Путь к собранным файлам фронтенда
-    root /home/raf/git/users/rozeraf/web/react/localapi/frontend/dist;
+    # Фронтенд rand.localhost
+    server {
+        listen 443 ssl http2;
+        server_name rand.localhost;
 
-    index index.html;
+        ssl_certificate     /home/raf/git/users/rozeraf/web/react/localapi/rand.localhost+1.pem;
+        ssl_certificate_key /home/raf/git/users/rozeraf/web/react/localapi/rand.localhost+1-key.pem;
 
-    location / {
-        try_files $uri $uri/ /index.html;
+        root /home/raf/git/users/rozeraf/web/react/localapi/frontend/dist;
+        index index.html;
+
+        gzip on;
+        gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+
+    # Бэкенд api.localhost
+    server {
+        listen 443 ssl http2;
+        server_name api.localhost;
+
+        ssl_certificate     /home/raf/git/users/rozeraf/web/react/localapi/rand.localhost+1.pem;
+        ssl_certificate_key /home/raf/git/users/rozeraf/web/react/localapi/rand.localhost+1-key.pem;
+
+        location / {
+            proxy_pass http://127.0.0.1:3001;
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $http_connection;
+        }
     }
 }
 ```
