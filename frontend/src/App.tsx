@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { RandomButton } from './components/RandomButton'
+import { StatusButton } from './components/StatusButton'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -20,6 +21,7 @@ function App() {
       <h1>Vite + React</h1>
       <div className="card">
         <RandomButton />
+        <StatusButton />
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>

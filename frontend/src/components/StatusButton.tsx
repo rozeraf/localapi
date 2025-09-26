@@ -1,28 +1,28 @@
 import { useState } from 'react'
 
-interface RandomResponse {
-  number: number
-  timestamp: string
-  message: string
+interface StatusResponse {
+  status: string
+  server: string
+  port: number
 }
 
-export const RandomButton = () => {
-  const [data, setData] = useState<RandomResponse | null>(null)
+export const StatusButton = () => {
+  const [data, setData] = useState<StatusResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchRandomNumber = async () => {
+  const fetchStatus = async () => {
     setLoading(true)
     setError(null)
     
     try {
-      const response = await fetch('https://api.localhost/random')
+      const response = await fetch('http://api.localhost/status')
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
-      const result: RandomResponse = await response.json()
+      const result: StatusResponse = await response.json()
       setData(result)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
@@ -33,15 +33,15 @@ export const RandomButton = () => {
 
   return (
     <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h2>🎲 Генератор случайных чисел</h2>
+      <h2>📡 Проверка статуса API</h2>
       
       <button 
-        onClick={fetchRandomNumber}
+        onClick={fetchStatus}
         disabled={loading}
         style={{
           padding: '12px 24px',
           fontSize: '16px',
-          backgroundColor: loading ? '#ccc' : '#0066cc',
+          backgroundColor: loading ? '#ccc' : '#28a745',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
@@ -49,7 +49,7 @@ export const RandomButton = () => {
           marginBottom: '20px'
         }}
       >
-        {loading ? '⏳ Загрузка...' : '🎯 Получить число'}
+        {loading ? '⏳ Проверка...' : '🔍 Проверить статус'}
       </button>
 
       {error && (
@@ -66,14 +66,14 @@ export const RandomButton = () => {
 
       {data && (
         <div style={{
-          backgroundColor: '#e6f7ff',
+          backgroundColor: '#e9f7ef',
           padding: '20px',
           borderRadius: '8px',
-          border: '1px solid #91d5ff'
+          border: '1px solid #a6e9c5'
         }}>
-          <h3>✨ {data.message}</h3>
-          <p><strong>Число:</strong> {data.number}</p>
-          <p><strong>Время:</strong> {new Date(data.timestamp).toLocaleString()}</p>
+          <h3>✅ {data.status}</h3>
+          <p><strong>Сервер:</strong> {data.server}</p>
+          <p><strong>Порт:</strong> {data.port}</p>
         </div>
       )}
     </div>
