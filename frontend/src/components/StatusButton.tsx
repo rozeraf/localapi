@@ -16,7 +16,7 @@ export const StatusButton = () => {
     setError(null)
     
     try {
-      const response = await fetch('http://api.localhost/status')
+      const response = await fetch('https://api.localhost/status')
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
